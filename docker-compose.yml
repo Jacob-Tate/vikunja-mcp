@@ -1,0 +1,15 @@
+services:
+  vikunja-mcp:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - VIKUNJA_API_URL=https://vikunja.example.com
+      - VIKUNJA_API_TOKEN=your_vikunja_api_token_here
+      - MCP_AUTH_PASSWORD=choose-a-strong-password
+      - JWT_SECRET=replace-with-at-least-32-random-chars
+      - BASE_URL=https://your-mcp-domain.example.com
+      - PORT=3000
+    restart: unless-stopped
