@@ -28,6 +28,7 @@ src/
 └── mcp/
     ├── server.ts       # McpServer factory + tool registration
     └── tools/
+        ├── utils.ts    # Shared ok() / fail() helpers
         ├── tasks.ts
         ├── comments.ts
         ├── labels.ts
@@ -75,6 +76,8 @@ This is the opposite of typical REST. The `vikunjaClient` in `src/vikunja/client
 Tool registration pattern:
 
 ```typescript
+import { ok, fail } from './utils';
+
 server.registerTool('tool-name', {
   description: 'What this tool does.',
   inputSchema: {
@@ -84,7 +87,7 @@ server.registerTool('tool-name', {
 }, async ({ id }) => {
   try {
     return ok(await vikunjaClient.someMethod(id));
-  } catch (e) { return fail(e); }
+  } catch (e) { return fail('my tool error', e); }
 });
 ```
 
@@ -93,8 +96,11 @@ server.registerTool('tool-name', {
 - No file > 300 lines
 - No function > 50 lines
 - TypeScript strict mode — no `any` without comment justification
-- All tool handlers must have a try/catch returning `fail(e)` on error
+- All tool handlers must have a try/catch returning `fail('X tool error', e)` on error
 - All Vikunja API calls go through `vikunjaClient` — no direct axios usage in tool files
+- Use `ok()` and `fail()` from `src/mcp/tools/utils.ts` — never define them inline in tool files
+- Tool responses use compact JSON (`JSON.stringify(data)`) — no pretty-printing
+- **List methods** in `VikunjaClient` strip noisy/unused fields (e.g. `created_by`, `bucket_id`, `position`) before returning; **single-item methods** return the full object
 
 ## Auth Flow (for reference)
 
