@@ -125,6 +125,19 @@ export interface TaskListParams {
   filter_include_nulls?: boolean;
 }
 
+// ── List Response Helpers ─────────────────────────────────────────────────────
+
+// Strip fields that are noisy/unused in list contexts to reduce token usage.
+// Single-item fetches (getTask, getProject) return the full object.
+
+function stripTask({ created_by, bucket_id, repeat_mode, position, updated, done_at, ...t }: VikunjaTask) {
+  return t;
+}
+
+function stripProject({ owner, updated, ...p }: VikunjaProject) {
+  return p;
+}
+
 // ── Error Helper ──────────────────────────────────────────────────────────────
 
 function vikunjaError(err: unknown): Error {
@@ -160,7 +173,7 @@ class VikunjaClient {
       const { project_id, ...rest } = params ?? {};
       const url = project_id ? `/projects/${project_id}/tasks` : '/tasks/all';
       const { data } = await this.http.get<VikunjaTask[]>(url, { params: rest });
-      return data;
+      return data.map(stripTask);
     } catch (e) { throw vikunjaError(e); }
   }
 
@@ -289,7 +302,7 @@ class VikunjaClient {
   async getProjects(params?: { page?: number; per_page?: number; is_archived?: boolean }): Promise<VikunjaProject[]> {
     try {
       const { data } = await this.http.get<VikunjaProject[]>('/projects', { params });
-      return data;
+      return data.map(stripProject);
     } catch (e) { throw vikunjaError(e); }
   }
 
