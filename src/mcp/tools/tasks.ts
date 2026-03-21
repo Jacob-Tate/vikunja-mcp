@@ -16,6 +16,7 @@ export function registerTaskTools(server: McpServer): void {
   server.registerTool('get-tasks', {
     description: 'Get tasks. Optionally filter by search term, sort, or use a Vikunja filter expression. Returns tasks across all projects.',
     inputSchema: {
+      project_id: z.number().int().optional().describe('Filter tasks to a specific project ID'),
       s: z.string().optional().describe('Search text to filter tasks by title'),
       page: z.number().int().optional().describe('Page number (default 1)'),
       per_page: z.number().int().optional().describe('Items per page (default 50, max 50)'),

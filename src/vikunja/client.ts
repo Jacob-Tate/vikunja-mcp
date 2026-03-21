@@ -114,6 +114,7 @@ export interface BulkUpdatePayload {
 }
 
 export interface TaskListParams {
+  project_id?: number;
   page?: number;
   per_page?: number;
   s?: string;
@@ -156,7 +157,9 @@ class VikunjaClient {
 
   async getTasks(params?: TaskListParams): Promise<VikunjaTask[]> {
     try {
-      const { data } = await this.http.get<VikunjaTask[]>('/tasks/all', { params });
+      const { project_id, ...rest } = params ?? {};
+      const url = project_id ? `/projects/${project_id}/tasks` : '/tasks/all';
+      const { data } = await this.http.get<VikunjaTask[]>(url, { params: rest });
       return data;
     } catch (e) { throw vikunjaError(e); }
   }
