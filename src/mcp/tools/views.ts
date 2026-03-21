@@ -1,16 +1,8 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { vikunjaClient } from '../../vikunja/client';
+import { ok, fail } from './utils';
 
-function ok(data: unknown): { content: [{ type: 'text'; text: string }] } {
-  return { content: [{ type: 'text', text: JSON.stringify(data) }] };
-}
-
-function fail(error: unknown): { content: [{ type: 'text'; text: string }]; isError: true } {
-  const msg = error instanceof Error ? error.message : String(error);
-  console.error('[view tool error]', msg);
-  return { content: [{ type: 'text', text: `Error: ${msg}` }], isError: true };
-}
 
 const VIEW_KINDS = ['list', 'gantt', 'table', 'kanban'] as const;
 
@@ -23,7 +15,7 @@ export function registerViewTools(server: McpServer): void {
   }, async ({ project_id }) => {
     try {
       return ok(await vikunjaClient.getViews(project_id));
-    } catch (e) { return fail(e); }
+    } catch (e) { return fail('view tool error', e); }
   });
 
   server.registerTool('create-view', {
@@ -36,7 +28,7 @@ export function registerViewTools(server: McpServer): void {
   }, async ({ project_id, ...view }) => {
     try {
       return ok(await vikunjaClient.createView(project_id, view));
-    } catch (e) { return fail(e); }
+    } catch (e) { return fail('view tool error', e); }
   });
 
   server.registerTool('update-view', {
@@ -50,7 +42,7 @@ export function registerViewTools(server: McpServer): void {
   }, async ({ project_id, view_id, ...fields }) => {
     try {
       return ok(await vikunjaClient.updateView(project_id, view_id, fields));
-    } catch (e) { return fail(e); }
+    } catch (e) { return fail('view tool error', e); }
   });
 
   server.registerTool('delete-view', {
@@ -63,6 +55,6 @@ export function registerViewTools(server: McpServer): void {
     try {
       await vikunjaClient.deleteView(project_id, view_id);
       return ok({ success: true });
-    } catch (e) { return fail(e); }
+    } catch (e) { return fail('view tool error', e); }
   });
 }

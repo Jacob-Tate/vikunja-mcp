@@ -1,16 +1,8 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { vikunjaClient } from '../../vikunja/client';
+import { ok, fail } from './utils';
 
-function ok(data: unknown): { content: [{ type: 'text'; text: string }] } {
-  return { content: [{ type: 'text', text: JSON.stringify(data) }] };
-}
-
-function fail(error: unknown): { content: [{ type: 'text'; text: string }]; isError: true } {
-  const msg = error instanceof Error ? error.message : String(error);
-  console.error('[user tool error]', msg);
-  return { content: [{ type: 'text', text: `Error: ${msg}` }], isError: true };
-}
 
 export function registerUserTools(server: McpServer): void {
   server.registerTool('get-current-user', {
@@ -18,7 +10,7 @@ export function registerUserTools(server: McpServer): void {
   }, async () => {
     try {
       return ok(await vikunjaClient.getCurrentUser());
-    } catch (e) { return fail(e); }
+    } catch (e) { return fail('user tool error', e); }
   });
 
   server.registerTool('get-users', {
@@ -29,6 +21,6 @@ export function registerUserTools(server: McpServer): void {
   }, async ({ s }) => {
     try {
       return ok(await vikunjaClient.getUsers(s));
-    } catch (e) { return fail(e); }
+    } catch (e) { return fail('user tool error', e); }
   });
 }

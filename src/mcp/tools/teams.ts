@@ -1,16 +1,8 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { vikunjaClient } from '../../vikunja/client';
+import { ok, fail } from './utils';
 
-function ok(data: unknown): { content: [{ type: 'text'; text: string }] } {
-  return { content: [{ type: 'text', text: JSON.stringify(data) }] };
-}
-
-function fail(error: unknown): { content: [{ type: 'text'; text: string }]; isError: true } {
-  const msg = error instanceof Error ? error.message : String(error);
-  console.error('[team tool error]', msg);
-  return { content: [{ type: 'text', text: `Error: ${msg}` }], isError: true };
-}
 
 export function registerTeamTools(server: McpServer): void {
   server.registerTool('get-teams', {
@@ -23,7 +15,7 @@ export function registerTeamTools(server: McpServer): void {
   }, async (params) => {
     try {
       return ok(await vikunjaClient.getTeams(params));
-    } catch (e) { return fail(e); }
+    } catch (e) { return fail('team tool error', e); }
   });
 
   server.registerTool('get-team', {
@@ -34,7 +26,7 @@ export function registerTeamTools(server: McpServer): void {
   }, async ({ id }) => {
     try {
       return ok(await vikunjaClient.getTeam(id));
-    } catch (e) { return fail(e); }
+    } catch (e) { return fail('team tool error', e); }
   });
 
   server.registerTool('create-team', {
@@ -47,7 +39,7 @@ export function registerTeamTools(server: McpServer): void {
   }, async (params) => {
     try {
       return ok(await vikunjaClient.createTeam(params));
-    } catch (e) { return fail(e); }
+    } catch (e) { return fail('team tool error', e); }
   });
 
   server.registerTool('update-team', {
@@ -61,7 +53,7 @@ export function registerTeamTools(server: McpServer): void {
   }, async ({ id, ...fields }) => {
     try {
       return ok(await vikunjaClient.updateTeam(id, fields));
-    } catch (e) { return fail(e); }
+    } catch (e) { return fail('team tool error', e); }
   });
 
   server.registerTool('delete-team', {
@@ -73,7 +65,7 @@ export function registerTeamTools(server: McpServer): void {
     try {
       await vikunjaClient.deleteTeam(id);
       return ok({ success: true });
-    } catch (e) { return fail(e); }
+    } catch (e) { return fail('team tool error', e); }
   });
 
   server.registerTool('add-team-member', {
@@ -87,7 +79,7 @@ export function registerTeamTools(server: McpServer): void {
     try {
       await vikunjaClient.addTeamMember(team_id, username, admin ?? false);
       return ok({ success: true });
-    } catch (e) { return fail(e); }
+    } catch (e) { return fail('team tool error', e); }
   });
 
   server.registerTool('remove-team-member', {
@@ -100,6 +92,6 @@ export function registerTeamTools(server: McpServer): void {
     try {
       await vikunjaClient.removeTeamMember(team_id, username);
       return ok({ success: true });
-    } catch (e) { return fail(e); }
+    } catch (e) { return fail('team tool error', e); }
   });
 }

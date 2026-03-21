@@ -1,16 +1,8 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { vikunjaClient } from '../../vikunja/client';
+import { ok, fail } from './utils';
 
-function ok(data: unknown): { content: [{ type: 'text'; text: string }] } {
-  return { content: [{ type: 'text', text: JSON.stringify(data) }] };
-}
-
-function fail(error: unknown): { content: [{ type: 'text'; text: string }]; isError: true } {
-  const msg = error instanceof Error ? error.message : String(error);
-  console.error('[task tool error]', msg);
-  return { content: [{ type: 'text', text: `Error: ${msg}` }], isError: true };
-}
 
 export function registerTaskTools(server: McpServer): void {
   server.registerTool('get-tasks', {
@@ -27,7 +19,7 @@ export function registerTaskTools(server: McpServer): void {
   }, async (params) => {
     try {
       return ok(await vikunjaClient.getTasks(params));
-    } catch (e) { return fail(e); }
+    } catch (e) { return fail('task tool error', e); }
   });
 
   server.registerTool('get-task', {
@@ -38,7 +30,7 @@ export function registerTaskTools(server: McpServer): void {
   }, async ({ id }) => {
     try {
       return ok(await vikunjaClient.getTask(id));
-    } catch (e) { return fail(e); }
+    } catch (e) { return fail('task tool error', e); }
   });
 
   server.registerTool('create-task', {
@@ -57,7 +49,7 @@ export function registerTaskTools(server: McpServer): void {
   }, async ({ project_id, ...task }) => {
     try {
       return ok(await vikunjaClient.createTask(project_id, task));
-    } catch (e) { return fail(e); }
+    } catch (e) { return fail('task tool error', e); }
   });
 
   server.registerTool('update-task', {
@@ -79,7 +71,7 @@ export function registerTaskTools(server: McpServer): void {
   }, async ({ id, ...fields }) => {
     try {
       return ok(await vikunjaClient.updateTask(id, fields));
-    } catch (e) { return fail(e); }
+    } catch (e) { return fail('task tool error', e); }
   });
 
   server.registerTool('delete-task', {
@@ -91,7 +83,7 @@ export function registerTaskTools(server: McpServer): void {
     try {
       await vikunjaClient.deleteTask(id);
       return ok({ success: true });
-    } catch (e) { return fail(e); }
+    } catch (e) { return fail('task tool error', e); }
   });
 
   server.registerTool('mark-task-done', {
@@ -102,7 +94,7 @@ export function registerTaskTools(server: McpServer): void {
   }, async ({ id }) => {
     try {
       return ok(await vikunjaClient.updateTask(id, { done: true }));
-    } catch (e) { return fail(e); }
+    } catch (e) { return fail('task tool error', e); }
   });
 
   server.registerTool('bulk-update-tasks', {
@@ -122,7 +114,7 @@ export function registerTaskTools(server: McpServer): void {
   }, async ({ task_ids, fields, values }) => {
     try {
       return ok(await vikunjaClient.bulkUpdateTasks({ task_ids, fields, values }));
-    } catch (e) { return fail(e); }
+    } catch (e) { return fail('task tool error', e); }
   });
 
   server.registerTool('get-task-assignees', {
@@ -133,7 +125,7 @@ export function registerTaskTools(server: McpServer): void {
   }, async ({ task_id }) => {
     try {
       return ok(await vikunjaClient.getTaskAssignees(task_id));
-    } catch (e) { return fail(e); }
+    } catch (e) { return fail('task tool error', e); }
   });
 
   server.registerTool('set-task-assignees', {
@@ -146,6 +138,6 @@ export function registerTaskTools(server: McpServer): void {
     try {
       await vikunjaClient.setTaskAssignees(task_id, assignee_ids.map(id => ({ id })));
       return ok({ success: true });
-    } catch (e) { return fail(e); }
+    } catch (e) { return fail('task tool error', e); }
   });
 }

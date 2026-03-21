@@ -1,16 +1,8 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { vikunjaClient } from '../../vikunja/client';
+import { ok, fail } from './utils';
 
-function ok(data: unknown): { content: [{ type: 'text'; text: string }] } {
-  return { content: [{ type: 'text', text: JSON.stringify(data) }] };
-}
-
-function fail(error: unknown): { content: [{ type: 'text'; text: string }]; isError: true } {
-  const msg = error instanceof Error ? error.message : String(error);
-  console.error('[filter tool error]', msg);
-  return { content: [{ type: 'text', text: `Error: ${msg}` }], isError: true };
-}
 
 export function registerFilterTools(server: McpServer): void {
   server.registerTool('get-filter', {
@@ -21,7 +13,7 @@ export function registerFilterTools(server: McpServer): void {
   }, async ({ id }) => {
     try {
       return ok(await vikunjaClient.getFilter(id));
-    } catch (e) { return fail(e); }
+    } catch (e) { return fail('filter tool error', e); }
   });
 
   server.registerTool('create-filter', {
@@ -35,7 +27,7 @@ export function registerFilterTools(server: McpServer): void {
   }, async (params) => {
     try {
       return ok(await vikunjaClient.createFilter(params));
-    } catch (e) { return fail(e); }
+    } catch (e) { return fail('filter tool error', e); }
   });
 
   server.registerTool('update-filter', {
@@ -50,7 +42,7 @@ export function registerFilterTools(server: McpServer): void {
   }, async ({ id, ...fields }) => {
     try {
       return ok(await vikunjaClient.updateFilter(id, fields));
-    } catch (e) { return fail(e); }
+    } catch (e) { return fail('filter tool error', e); }
   });
 
   server.registerTool('delete-filter', {
@@ -62,6 +54,6 @@ export function registerFilterTools(server: McpServer): void {
     try {
       await vikunjaClient.deleteFilter(id);
       return ok({ success: true });
-    } catch (e) { return fail(e); }
+    } catch (e) { return fail('filter tool error', e); }
   });
 }
